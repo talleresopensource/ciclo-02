@@ -1,0 +1,309 @@
+---
+title: "Reporte de Practica"
+author:
+  name: Alejandro Ramos Usaj
+  email: aler.usaj@gmail.com
+  affiliation: Instituto de Calculo - FCEyN, UBA
+date: "6/27/2021"
+output:
+  html_document:
+    theme: paper
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+abstract: Este es un ejemplo de como deberia quedar el abstract del reporte aunque
+  el suyo va a tener un poco mas de contenido.
+params:
+  datos:
+    label: 'Dataset para usar:'
+    value: datos/dataset_movimiento.csv
+    input: file
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = FALSE, fig.show = 'hold', fig.align = 'center')
+#Determine format for floaters to avoid knitr default scientific notation
+knitr::knit_hooks$set(inline = function(x) 
+  {
+  if (is.numeric(x)) {
+    format(x, digits = 2)
+    } else x
+  }
+)
+
+#Libraries
+library(tidyverse)
+library(lubridate)
+```
+
+# Introduccion {-}
+
+Este documento va a servir como guia de lo que tienen que hacer y de como deberia quedar el resultado final.
+
+Van a encontrar, primero que nada, los ejercicios y, posteriormente, el contenido del documento en si. Los ejercicios estan enfocados en el uso de RMarkdown de manera que van a tener que ajustar y modificar el documento para quedarse con un resultado que sea lo mas parecido posible a este documento.
+
+Como resultado final tienen que tener una presentacion en HTML que se vea igual a esta, partiendo de un archivo *.Rmd* al cual van a tener que hacerle las modificaciones necesarias segun indiquen los ejercicios. Su forma de comparar si van por buen camino es el aspecto visual de esta presentacion.
+
+Sin embargo van a tener el archivo *.Rmd* original (es decir, este mismo archivo) para comparar respuestas o para avanzar en caso de que esten muy trabados. Asimismo recuerden que usar un notebook como output puede hacer mas facil y rapida la visualizacion.
+
+***
+
+Para hacer los ejercicios pueden utilizar la base de datos que les fue proporcionada o una base de datos propia aunque en caso de que usen una base propia, van a tener que hacer algunos ajustes al codigo que produce los resultados de los analisis. 
+
+Les voy a proporcionar material de consulta para resolver dudas que les puedan surgir a lo largo de los ejercicios
+
+- [Guia de sintaxis de Markdown](https://www.markdownguide.org/basic-syntax/)
+- [Guia de las opciones de bloques (chunks) y sintaxis](https://yihui.org/knitr/options/#code-evaluation)
+- [Guia general de documentos HTML en RMarkdown](https://bookdown.org/yihui/rmarkdown/html-document.html)
+- [Cheatsheet de RMarkdown](https://rmarkdown.rstudio.com/lesson-15.HTML)
+- [RMarkdown Reference Guide](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+# Ejercicios
+
+## YAML
+
+1. Asignar un autor que incluya afiliacion y mail
+2. Agregar un brevisimo abstract que resuma en pocas oraciones su area de trabajo
+3. Agregar una tabla de contenidos que tenga las siguientes condiciones:
+    - Una profundidad de 2
+    - Ser flotante
+4. Numerar los encabezados
+5. Utilizar el theme "paper"
+
+#### OPCIONAL {.unlisted .unnumbered}
+
+6. Explorar el uso del parametro ya establecido para incluir distintos archivos. 
+
+**Importante:** Intentar un knit del reporte con un archivo que tenga una estructura distinta a la del empleado en el ejemplo puede llevar a errores en multiples secciones. Si van a explorar usando distintos archivos vean de chequear que diferencias tiene con el de practica antes de hacer knit. 
+
+## Cuerpo
+
+1. Formatear los encabezados segun su jerarquia considerando lo observado en este documento
+2. Desenumerar aquellos encabezados que correspondan considerando lo observado en este documento
+3. Generar las pestañas en los encabezados que correspondan
+
+## Codigo
+
+1. Asignar las opciones globales de los bloques en el bloque denominado *setup* para que:
+    - No se muestre el codigo
+    - No se muestren los mensajes
+    - Las figuras se muestren en *hold*
+    - Las figuras tengan un alineamiento centrado
+2. Generar el grafico de ggpairs dentro del bloque `multi-vis`, excluyendo las variables mencionadas
+3. Completar los segmentos faltantes del codigo para hacer el grafico boxplot en el bloque `boxplot`
+4. Completar el llamado a la funcion `summarise` del bloque `lm-trat` con la media del movimiento
+5. Completar el llamado a la funcion `lm` del bloque `lm-trat` con las variables dependiente e independiente
+6. Completar el llamado a la funcion `t.test` del bloque `t-test-light` 
+7. Completar el codigo inline de la pestaña *Luces* para la varianza explicada en el modelo lineal
+8. Completar con el valor de t todas las veces que ocurra (tiene que completarse dentro de la variable `round`)
+
+
+# Analisis Exploratorio
+
+```{r, data-load, include = F}
+df <- read_csv(params$datos)
+
+#Create lights variable to specify if the lights were on or off during the experiment using the hour from "datetime" variable
+df <- df %>% mutate(
+  lights = ifelse(between(lubridate::hour(datetime), 7, 18), "lights_on", "lights_off")
+  )
+
+```
+
+## Descripcion de los datos
+
+Los datos corresponden al movimiento de un determinado animal en un setup en el que se registra, cada 5 minutos el movimiento, de un grupo de animales. El codigo de cada animal esta dado en la columna **ID**. Asimismo los animales pasan por dos tratamientos distintos segun lo indicado en la columna **Treatment**.
+
+Los experimentos se realizaron en 3 fechas distintas segun indica la variable **exp_id**:
+
+- exp01 
+- exp02
+- exp03  
+
+Cada computadora registra a un unico individuo pero se reutilizaron las computadoras, la computadora que registro a cada individuo esta indicado en la columna **PC**.
+
+La hora del registro se indica en la variable **datetime**. Las luces se apagan a las 19:00:00 y se prenden a las 07:00:00 por lo que algunos animales fueron captados con luces prendidas o apagadas segun lo indica la variable **lights**.
+
+Por ultimo la columna **movement** es la que computa que tanto se movio cada animal durante el registro. 
+
+Vemos un ejemplo de las primeras filas del dataset. 
+
+```{r, data-glimpse}
+#Get a glimpse of the first few rows of the dataset
+head(df) %>% gt::gt()
+```
+
+*** 
+
+## Agregados
+
+Siendo que estos datos representan el movimiento de `r length(unique(df$ID))` animales. Podria ser prudente hacer los analisis utilizando medidas agregadas para cada animal. Para eso vamos a generar un agregado utilizando la media y otro utilizando la mediana considerando las diferencias que observamos en la tabla de abajo.
+
+```{r, agregate}
+#Group dataset by ID to get individual mean and median movement measures withouth saving the results to just display it
+df %>% group_by(ID) %>%
+  summarise(
+  across(
+    movement, .fns = list(media = mean, mediana = median), .names = '{.fn}'
+         )
+  ) %>%
+  mutate(diferencia = media - mediana) %>% #Add a column with the difference between the mean and the median
+  gt::gt()
+
+#Group the dataset by ID, treatment and lights condition to get agregated measures for each individual on each condition and save the result
+df_new <- df %>% group_by(ID, Treatment, lights) %>%
+  summarise(
+  across(
+    movement, .fns = list(media = mean, mediana = median), .names = '{.fn}'
+         )
+  ) %>%
+  mutate(diferencia = media - mediana) %>% #Add a column with the difference between the mean and the median
+  ungroup()
+```
+
+Antes de proseguir vamos a observar la distribucion y relacion entre las distintas variables, con la excepcion del a variable **ID** y **diferencia** que no son obviamente pertinentes de analisis, usando la funcion ggpairs de la libreria GGally. 
+
+
+```{r, multi-vis}
+#Create a multivariate plot for each of the variables in the filtered dataset
+GGally::ggpairs(
+  df_new %>% select(-ID, -diferencia)
+)
+```
+
+Vemos que la media y la mediana son muy similares mas alla de las diferencias en los numeros observadas en las tablas por lo que podemos proseguir con los analisis utilizando unicamente la media.
+
+Antes de graficar, generamos una tabla con medidas de resumen para el movimiento segun distintas condiciones.
+
+
+```{r, summary}
+#Group by treatment and light conditions on the new dataset created earlier to calculate agregated measures for each condition
+df_new %>% group_by(Treatment, lights) %>%
+  summarise(
+    across(media, .fns = list(media = mean, desvio = sd, maximo = max, minimo = min, mediana = median), .names = "{.fn}"
+           )
+  ) %>%
+  gt::gt()
+```
+
+La diferencia entre tratamientos parece nula pero para ambos casos hay una gran diferencia entre el movimiento con las luces apagadas o prendidas siendo que es mucho menor en el segundo caso a comparacion del primero. Para tener una mejor idea vamos a hacer un boxplot entre condiciones.
+
+El punto rojo en el grafico representa la media del grupo y las barras horizontales representan dos veces el error estandar de la media. 
+
+```{r, boxplot}
+#Boxplot of movement mean differences by treatment and lights condition 
+ggplot(df_new, mapping = aes(x = Treatment, y = media, fill = lights)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(.75)) +
+  stat_summary(geom = 'pointrange', fun.data = mean_se, fun.args = list(mult = 2), position = position_dodge(.75), color = 'red') +
+  xlab('Tratamiento') + ylab('Mediana del movimiento') + labs(fill = 'Luces') +
+    scale_fill_brewer(palette = 'Set3')
+```
+
+La diferencia se hace aun mas notable en el grafico pero para poder cuantificarla adecuadamente vamos a correr algunos analisis.
+
+# Modelado
+
+Vamos a correr los siguientes modelos lineales, variando los predictores:
+
+- El tratamiento como unico predictor
+- Las luces como unico predictor
+- El tratamiento y las luces como predictores junto con su interaccion
+
+En todos los casos vamos a utilizar la media como variable dependiente de interes.
+
+## Modelo Lineales {.tabset}
+
+### Tratamiento
+
+Para este analisis vamos a tener que agrupar los animales por tratamiento utilizando la media de cada animal sin diferenciar el estado de las luces
+
+```{r, lm-trat}
+#Create a dataset for the linear model with getting mean movement for every subject by treatment condition
+trat <- df %>% group_by(ID, Treatment) %>% summarise(media = mean(movement))
+#Adjust linear model 
+lm_trat <- lm(media ~ Treatment, data = trat)
+#Tidy linear model results to display as an html table
+broom::tidy(lm_trat) %>% gt::gt()
+```
+
+Es claro que no hay diferencias entre los grupos con distintos tratamientos en la media del movimiento.
+
+### Luces
+
+Para este modelo vamos a utilizar la media del movimiento de cada animal cuando estuvo con las luces apagadas y prendidas. Primero vamos a realizar un modelo lineal simple.
+
+```{r, lm-light}
+#Adjust linear model 
+lm_light <- lm(media ~ lights, data = df_new)
+#Tidy linear model results to display as an html table
+broom::tidy(lm_light) %>% gt::gt()
+```
+
+La diferencia entre la media del movimiento de los animales con las luces apagadas en lugar de prendidas es enorme, habiendo una reduccion promedio del movimiento de `r round(lm_light[[1]][[2]])` (con un rango de `r round(summary(lm_light)$coef[2] - summary(lm_light)$coef[4]*2)` a `r round(summary(lm_light)$coef[2] + summary(lm_light)$coef[4]*2)`) cuando se tienen las luces encendidas. Aun mas, el `r round(summary(lm_light)$r.squared * 100, 1)`% de la varianza en la media del movimiento es explicado por las luces. 
+
+Sin embargo tenemos las observaciones de 18 animales repetidas dos veces, una para las luces apagadas y otra para las luces prendidas por lo que es esperable que los haya correlaciones indeseadas en los residuales por lo que aplicar un modelo lineal comun como el que acabamos de usar no seria correcto.
+
+Por tanto vamos a utilizar una prueba t de medidas repetidas. 
+
+```{r}
+#Paired t-test for the lights effects on the movement mean
+t_light <- t.test(media ~ lights, data = df_new, paired = T)
+#Tidy t test results to display as an html table
+broom::tidy(t_light) %>% gt::gt()
+
+```
+
+Los resultados son similares a los del modelo lineal simple, el efecto de la luz sobre el movimiento es enorme con un valor **t** de `r round(t_light$statistic[[1]])`.
+
+
+### Tratamiento y luces
+
+Si quisieramos comparar tanto el tratamiento como el efecto de las luces deberiamos utilizar un modelo multinivel que involucre la variable entre sujetos (el tratamiento) y la variable intrasujeto (la luz). 
+
+Como primera aproximacion vamos a realizar dos modelos lineales simples sobre el efecto de las luces, uno por tratamiento.
+
+#### Tratamiento 1
+
+```{r, lm_inter}
+#Paired t test over a filtered dataset including only subjects under treatment 'ctrl1'
+trat1 <- t.test(media ~ lights, 
+                data = df_new %>% filter(Treatment == 'ctrl1'), paired = T
+                )
+#Tidy t test results to display as an html table
+broom::tidy(trat1) %>% gt::gt()
+```
+
+Vemos que el efecto de la luz es muy grande para el tratamiento 1 con un efecto similar (aunque menor, con un valor **t** de `r round(trat1$statistic[[1]])`) al de ambos tratamientos a la vez. 
+
+#### Tratamiento 2
+
+```{r}
+#Paired t test over a filtered dataset including only subjects under treatment 'ctrl2'
+trat2 <- t.test(media ~ lights, 
+                data = df_new %>% filter(Treatment == 'ctrl2'), paired = T
+                )
+#Tidy t test results to display as an html table
+broom::tidy(trat2) %>% gt::gt()
+```
+Para el tratamiento 2 los resultados son tambien similares aunque mayores (con un valor **t** de `r round(trat2$statistic[[1]])`).
+
+#### Modelo mixto
+
+Vamos a correr un modelo mixto con las luces como variable intra-sujeto y el tratamiento como variable inter-sujeto, usando a los sujetos como efecto random.
+
+```{r}
+#Fit mixed model using treatment and light as fixed effects and subjects as random effect
+mixto <- nlme::lme(media ~ Treatment*lights, random =  ~ 1 | ID, data = df_new)
+cbind( #Add a column to the anova results table
+  anova(mixto), #F test to compare models with different predictors
+  Modelo = c('Baseline','Tratamiento','Luces','Interaccion') #Added column to indicate the model of each row
+  ) %>% gt::gt()
+```
+
+Como era de esperarse, las luces tienen un impacto muy significativo en la media del movimiento pero la interaccion entre el tratamiento y las luces no es significativa. 
+
+# Conclusion
+
+La presencia o ausencia de luces tiene un enorme impacto sobre el movimiento de los animales. Sin embargo los tratamientos experimentales empleados no tuvieron incidencia alguna ni interaccionaron con el efecto de las luces. 
