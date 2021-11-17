@@ -8,7 +8,7 @@ Los contenidos de este curso comprenden dos presentaciones en formato HTML (arch
 
 Como trabajo final, para poner en practica los contenidos vistos, se pone a disposición de lxs alumnxs el reporte de un análisis de datos de ejemplo (con dataset de juguete) junto con una serie de ejercicios dentro del archivo 5, el cual fue generado a partir del archivo 6.
 
-El objetivo es utilizar los ejercicios y el mismo archivo HTML como guía para completar el archivo 7 de manera que cuando se haga un *knit* sobre ese archivo obtengamos un archivo HTML virtualmente idéntico al que contiene los ejercicios (archivo 6). Se pone a disposición el archivo 6 en caso que se quiera contrastar las respuestas con el código original o para ayudar a aquellas personas que esten trabados en algún ejercicio. 
+El objetivo es utilizar los ejercicios y el mismo archivo HTML como guía para completar el archivo 7 de manera que cuando se haga un *knit* sobre ese archivo obtengamos un archivo HTML virtualmente idéntico al que contiene los ejercicios (archivo 5). Se pone a disposición el archivo 6 de resolución en caso que se quiera contrastar el ejercicio que deben realizar en el archivo 7 con el código original, o para ayudar a aquellas personas que esten trabadas en algún ejercicio. 
 
 A continuacion, la lista de archivos:
 
