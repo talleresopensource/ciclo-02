@@ -1,4 +1,4 @@
-Estimación de postura con DeepLabCut por Agostina Sacson
+## Estimación de postura con DeepLabCut por Agostina Sacson
 
 En este taller vamos a aprender a usar el algoritmo de estimación de postura sin marcadores DeepLabCut dentro del paquete SimBA (Simple Behavioral Analysis) que nos va a proveer una interfaz gráfica amigable que va a facilitar la creación de modelos.
 
